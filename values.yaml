@@ -1,0 +1,12 @@
+image:
+  registry: docker.io
+  repository: bitnami/tomcat
+  tag: latest
+
+service:
+  type: LoadBalancer
+  port: 8080
+
+persistance:
+  enabled: true
+  size: 10Gi  

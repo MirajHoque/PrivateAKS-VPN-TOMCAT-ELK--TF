@@ -177,3 +177,33 @@ resource "azurerm_kubernetes_cluster" "aks" {
     azurerm_virtual_network.mt_vnet
   ]
 }
+
+#helm release:  deploy Helm charts within your Kubernetes cluster.
+# helm_release can create a new namespace, or generate resources (like deployments or services) from a Helm chart.
+#Here we deploy the bitnami/tomcat chart, which packages a basic tomcat deployment and service 
+
+resource "helm_release" "tomcat" {
+  name       = "tomcat" #name of helm release
+  namespace  = "default" #namespace of kubernetes resource
+
+  chart     = "tomcat" #helm chart use for the deployment
+  version   = "10.16.2" #version of the Helm chart
+  repository = "https://charts.bitnami.com/bitnami" #Helm chart repository URL.
+
+  values = [
+    #custom configuration values for Tomcat here
+    "${file("values.yaml")}"
+  ]
+
+  #'set' Configures Helm chart values.
+  set {
+    name  = "cluster.enabled" #enable any feature related to clustering that helm chart provide
+    value = "true"
+  }
+
+  set {
+    name  = "metrics.enabled" #enabling metrics collection for the tomcat server
+    value = "true"
+  }
+
+}
