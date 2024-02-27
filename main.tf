@@ -155,8 +155,8 @@ resource "azurerm_kubernetes_cluster" "aks" {
   }
 
 
-  #retrieve the latest version of Kubernetes supported by Azure Kubernetes Service if version is not set
-  kubernetes_version = var.kubernetes_version != "" ? var.kubernetes_version : data.azurerm_kubernetes_service_versions.current.latest_version
+#retrieve the latest version of Kubernetes supported by Azure Kubernetes Service if version is not set
+kubernetes_version = var.kubernetes_version != "" ? var.kubernetes_version : data.azurerm_kubernetes_service_versions.current.latest_version
 
    default_node_pool {
     name       = "workernodes"
@@ -174,13 +174,13 @@ resource "azurerm_kubernetes_cluster" "aks" {
 
   depends_on = [
     azurerm_resource_group.aks_rg,
-    azurerm_virtual_network.mt_vnet
+    azurerm_subnet.mt_subnet
   ]
 }
 
-#helm release:  deploy Helm charts within your Kubernetes cluster.
-# helm_release can create a new namespace, or generate resources (like deployments or services) from a Helm chart.
-#Here we deploy the bitnami/tomcat chart, which packages a basic tomcat deployment and service 
+# #helm release:  deploy Helm charts within your Kubernetes cluster.
+# # helm_release can create a new namespace, or generate resources (like deployments or services) from a Helm chart.
+# #Here we deploy the bitnami/tomcat chart, which packages a basic tomcat deployment and service 
 
 resource "helm_release" "tomcat" {
   name       = "tomcat" #name of helm release
@@ -206,4 +206,56 @@ resource "helm_release" "tomcat" {
     value = "true"
   }
 
+  depends_on = [
+    azurerm_kubernetes_cluster.aks
+  ]
+
 }
+
+#ELK Stack 
+
+#ElasticSearch
+resource "helm_release" "elasticsearch" {
+  name       = "elasticsearch"
+  namespace  = "default"
+
+  repository = "https://helm.elastic.co"
+  chart      = "elasticsearch"
+  version    = "8.5.1"
+
+  # # Customize values as needed
+  # values = [
+  #   # Add any specific Elasticsearch configuration here
+  # ]
+}
+
+#LogStash
+resource "helm_release" "logstash" {
+  name       = "logstash"
+  repository = "https://helm.elastic.co"
+  chart      = "logstash"
+  version    = "8.5.1"
+
+  # Customize values as needed
+  # values = [
+  #   # Add any specific Logstash configuration here
+  # ]
+}
+
+#Kibana
+resource "helm_release" "kibana" {
+  name       = "kibana"
+  repository = "https://helm.elastic.co"
+  chart      = "kibana"
+  version    = "8.5.1"
+
+  # # Customize values as needed
+  # values = [
+  #   # Add any specific Kibana configuration here
+  # ]
+
+   depends_on = [
+    helm_release.tomcat
+  ]
+}
+

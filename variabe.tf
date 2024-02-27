@@ -31,7 +31,7 @@ variable "vpn_gateway_name" {
 variable "location" {
   description = "(Required) Define the region where the resource groups will be created"
   type        = string
-  default     = "Central India"
+  default     = "East US"
 }
 
 variable "kubernetes_version" {
